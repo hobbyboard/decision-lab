@@ -406,8 +406,14 @@ h1{
   <section id="step1" class="screen active">
     <div class="eyebrow">구매 직전 30초 판결</div>
     <h1>이거 사려고?<br>얼마짜리야?</h1>
-    <p class="sub">원화 가격만 넣어도 됩니다. 월급 대비 몇 시간짜리 소비인지 바로 바꿔드릴게요.</p>
+    <p class="sub">사고 싶은 것과 가격을 넣어주세요. 월급 대비 몇 시간짜리 소비인지 바로 바꿔드릴게요.</p>
     <div class="stack">
+      <div class="card">
+        <div class="label">뭘 사려고?</div>
+        <div class="moneybox" style="grid-template-columns:minmax(0,1fr)">
+          <input id="item" type="text" maxlength="30" placeholder="예: 운동화, 가방, 에어팟" style="text-align:left;font-size:20px">
+        </div>
+      </div>
       <div class="card">
         <div class="label">상품 가격</div>
         <div class="moneybox"><b>₩</b><input id="price" inputmode="numeric" pattern="[0-9]*" value="89000"></div>
@@ -440,7 +446,7 @@ h1{
   <section id="result" class="screen">
     <button class="back" onclick="show('step2')">← 다시 계산하기</button>
     <div class="hero">
-      <div class="caption">이 물건의 가격</div>
+      <div class="caption" id="itemPriceCaption">이 물건의 가격</div>
       <div class="price" id="rPrice">₩89,000</div>
       <div class="caption" style="margin-top:24px">당신의 노동</div>
       <div class="big" id="rHours">3시간 43분</div>
@@ -492,7 +498,7 @@ h1{
 <div id="toast" class="toast">복사했어요</div>
 
 <script>
-let state={price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
+let state={item:"이거",price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
 const units=[
  ["🧑‍💼","김팀장 잔소리",15],
  ["🪑","의미 없는 회의",60],
@@ -510,11 +516,13 @@ function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.re
 function goSalary(){show("step2")}
 function toggleSeg(el){el.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));el.classList.add("active")}
 function calculate(){
+ state.item=(document.getElementById("item").value||"").trim()||"이거";
  state.price=Number(document.getElementById("price").value.replace(/\D/g,''))||0;
  state.salary=Number(document.getElementById("salary").value.replace(/\D/g,''))||1;
  const hours=state.price/(state.salary/209);
  state.totalMinutes=Math.max(1,Math.round(hours*60));
  const h=Math.floor(state.totalMinutes/60),m=state.totalMinutes%60;
+ document.getElementById("itemPriceCaption").textContent=`${state.item}의 가격`;
  document.getElementById("rPrice").textContent="₩"+fmt(state.price);
  document.getElementById("rHours").textContent=h+"시간 "+m+"분";
  document.getElementById("rRatio").textContent="월급의 "+(state.price/state.salary*100).toFixed(2)+"%";
@@ -540,8 +548,8 @@ function renderUnits(){
 
  const hero=state.heroUnit;
  const heroCount=unitCount(hero);
- document.getElementById("memeHeadline").textContent=`${hero[0]} ${hero[1]} ${heroCount}짜리 소비입니다.`;
- document.getElementById("shareQuote").innerHTML=`나는 이걸 사기 위해<br>${hero[1]} ${heroCount}를 버텨야 한다.`;
+ document.getElementById("memeHeadline").textContent=`${state.item} = ${hero[0]} ${hero[1]} ${heroCount}짜리 소비입니다.`;
+ document.getElementById("shareQuote").innerHTML=`${state.item} 하나 사려면<br>${hero[1]} ${heroCount}를 버텨야 한다.`;
 }
 function renderVerdict(){
  const ratio=state.price/state.salary*100;
@@ -598,7 +606,7 @@ async function shareResult(){
   // Headline
   ctx.fillStyle="#77746d";
   ctx.font='700 27px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("이거 하나 사려면 회사에서…",540,210);
+  fitText(ctx,`${state.item} 하나 사려면 회사에서…`,540,210,860,27,20);
 
   // Hero icon
   ctx.fillStyle="#ffffff";
@@ -658,7 +666,7 @@ async function shareResult(){
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
   const file=new File([blob],"decision-lab-result.png",{type:"image/png"});
 
-  const shortText=`${hero[0]} ${hero[1]} ${heroCount}짜리 소비래 ㅋㅋ\n너도 해봐 👇`;
+  const shortText=`${state.item} 사려면 ${hero[0]} ${hero[1]} ${heroCount}짜리래 ㅋㅋ\n너도 해봐 👇`;
   const linkText=`${shortText}\n${serviceUrl}`;
 
   try{
