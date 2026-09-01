@@ -460,7 +460,7 @@ h1{
       <div class="brandline">결정장애 연구소 · 내 돈 몇 시간이야?</div>
     </div>
     <button class="button ghost" style="margin-top:10px" onclick="shareResult()">📤 결과 공유하기</button>
-    <div class="helper" style="text-align:center">🔒 공유 카드에는 상품 가격과 월급을 숨겨 월급 역산을 어렵게 합니다.</div>
+    <div class="helper" style="text-align:center">🔒 공유 카드에는 가격·월급은 숨기고, 재미있는 환산 결과만 보여줘요.</div>
   </section>
 
   <section id="random" class="screen">
@@ -478,7 +478,7 @@ h1{
 <div id="toast" class="toast">복사했어요</div>
 
 <script>
-let state={price:89000,salary:5000000,totalMinutes:223};
+let state={price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
 const units=[
  ["🧑‍💼","김팀장 잔소리",15],
  ["🪑","의미 없는 회의",60],
@@ -509,17 +509,25 @@ function calculate(){
  show("result");
 }
 function sample(arr,n){return [...arr].sort(()=>Math.random()-.5).slice(0,n)}
+function unitCount(u){
+ const count=state.totalMinutes/u[2];
+ return count>=10?Math.round(count)+"회":count.toFixed(1)+"회";
+}
 function renderUnits(){
  const chosen=sample(units,3);
+ state.chosenUnits=chosen;
+ state.heroUnit=chosen[Math.floor(Math.random()*chosen.length)];
+
  const html=chosen.map(u=>{
-   const count=state.totalMinutes/u[2];
-   const shown=count>=10?Math.round(count)+"회":count.toFixed(1)+"회";
+   const shown=unitCount(u);
    return `<div class="unit"><div class="left">${u[0]} ${u[1]}</div><div class="right">${shown}</div></div>`
  }).join("");
  document.getElementById("unitList").innerHTML=html;
- const boss=Math.max(1,Math.round(state.totalMinutes/15));
- document.getElementById("memeHeadline").textContent=`김팀장 잔소리 ${boss}회짜리 소비입니다.`;
- document.getElementById("shareQuote").innerHTML=`나는 이걸 사기 위해<br>김팀장 잔소리 ${boss}회를 버텨야 한다.`;
+
+ const hero=state.heroUnit;
+ const heroCount=unitCount(hero);
+ document.getElementById("memeHeadline").textContent=`${hero[0]} ${hero[1]} ${heroCount}짜리 소비입니다.`;
+ document.getElementById("shareQuote").innerHTML=`나는 이걸 사기 위해<br>${hero[1]} ${heroCount}를 버텨야 한다.`;
 }
 function renderVerdict(){
  const ratio=state.price/state.salary*100;
@@ -546,51 +554,98 @@ function runRandom(){
  },900);
 }
 async function shareResult(){
-  const boss=Math.max(1,Math.round(state.totalMinutes/15));
   const serviceUrl="https://hobbyboard.github.io/decision-lab/";
+  const chosen=(state.chosenUnits && state.chosenUnits.length===3)?state.chosenUnits:sample(units,3);
+  const hero=state.heroUnit || chosen[0];
+  const heroCount=unitCount(hero);
+
   const canvas=document.createElement("canvas");
   canvas.width=1080; canvas.height=1350;
   const ctx=canvas.getContext("2d");
 
-  ctx.fillStyle="#f7f6f2";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Background
+  ctx.fillStyle="#f6f4ee";
+  ctx.fillRect(0,0,1080,1350);
 
-  ctx.textAlign="center";
-  ctx.fillStyle="#151515";
-  ctx.font='700 34px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("결정장애 연구소",540,120);
+  // Decorative blobs
+  ctx.fillStyle="#e9e4d9";
+  ctx.beginPath(); ctx.arc(930,110,145,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#efe9dc";
+  ctx.beginPath(); ctx.arc(95,1160,180,0,Math.PI*2); ctx.fill();
 
-  ctx.fillStyle="#777";
-  ctx.font='600 28px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("이 물건의 진짜 가격은",540,290);
-
-  ctx.fillStyle="#151515";
-  ctx.font='900 62px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("김팀장 잔소리",540,470);
-
-  ctx.font='900 150px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText(boss+"회",540,670);
-
-  ctx.fillStyle="#555";
-  ctx.font='700 38px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("그래도 살까?",540,820);
-
+  // Brand badge
   ctx.fillStyle="#171717";
-  roundRect(ctx,130,930,820,150,42);
-  ctx.fill();
+  roundRect(ctx,70,62,330,70,35); ctx.fill();
   ctx.fillStyle="#fff";
-  ctx.font='800 38px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("나도 내 돈을 시간으로 바꿔보기",540,1025);
+  ctx.textAlign="center";
+  ctx.font='800 29px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("결정장애 연구소",235,108);
 
-  ctx.fillStyle="#777";
-  ctx.font='500 25px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("공유 카드에는 상품 가격과 월급을 표시하지 않아요",540,1190);
-  ctx.font='700 24px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("hobbyboard.github.io/decision-lab",540,1250);
+  // Headline
+  ctx.fillStyle="#77746d";
+  ctx.font='700 27px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("내 돈을 회사생활로 바꿔보면",540,210);
+
+  // Hero icon
+  ctx.fillStyle="#ffffff";
+  ctx.beginPath(); ctx.arc(540,345,95,0,Math.PI*2); ctx.fill();
+  ctx.font='82px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", sans-serif';
+  ctx.fillText(hero[0],540,375);
+
+  // Hero text
+  ctx.fillStyle="#171717";
+  ctx.font='900 52px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  fitText(ctx,hero[1],540,495,880,52,36);
+  ctx.font='950 112px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText(heroCount,540,620);
+
+  ctx.fillStyle="#77746d";
+  ctx.font='700 27px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("짜리 소비입니다",540,675);
+
+  // "In other words" section
+  ctx.textAlign="left";
+  ctx.fillStyle="#171717";
+  ctx.font='900 31px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("다른 말로 하면",70,770);
+
+  const cardY=[810,930,1050];
+  chosen.forEach((u,i)=>{
+    const y=cardY[i];
+    ctx.fillStyle="#ffffff";
+    roundRect(ctx,70,y,940,94,28); ctx.fill();
+
+    ctx.font='44px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", sans-serif';
+    ctx.textAlign="center";
+    ctx.fillText(u[0],125,y+61);
+
+    ctx.textAlign="left";
+    ctx.fillStyle="#242424";
+    ctx.font='800 28px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+    fitTextLeft(ctx,u[1],185,y+58,550,28,22);
+
+    ctx.textAlign="right";
+    ctx.font='900 31px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+    ctx.fillText(unitCount(u),955,y+59);
+  });
+
+  // CTA
+  ctx.fillStyle="#171717";
+  roundRect(ctx,70,1185,940,88,30); ctx.fill();
+  ctx.textAlign="center";
+  ctx.fillStyle="#fff";
+  ctx.font='800 28px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("너라면 살래?  ·  나도 계산해보기 →",540,1241);
+
+  ctx.fillStyle="#77746d";
+  ctx.font='600 20px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("가격과 월급은 공유 카드에 표시하지 않아요",540,1315);
 
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
   const file=new File([blob],"decision-lab-result.png",{type:"image/png"});
-  const text=`김팀장 잔소리 ${boss}회짜리 소비래 ㅋㅋ\n너라면 살래?\n\n${serviceUrl}`;
+
+  const detailLines=chosen.map(u=>`${u[0]} ${u[1]} ${unitCount(u)}`).join("\n");
+  const text=`내 돈을 회사생활로 바꿔봤더니…\n${hero[0]} ${hero[1]} ${heroCount}짜리 소비래 ㅋㅋ\n\n다른 말로 하면\n${detailLines}\n\n너라면 살래?\n${serviceUrl}`;
 
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
@@ -607,10 +662,30 @@ async function shareResult(){
       a.href=URL.createObjectURL(blob);
       a.download="decision-lab-result.png";
       a.click();
-      if(navigator.clipboard) await navigator.clipboard.writeText(serviceUrl);
-      toast("카드 저장 + 서비스 링크 복사 완료");
+      if(navigator.clipboard) await navigator.clipboard.writeText(text);
+      toast("공유 카드 저장 + 내용 복사 완료");
     }
   }catch(e){}
+}
+function fitText(ctx,text,x,y,maxWidth,startSize,minSize){
+  let size=startSize;
+  while(size>minSize){
+    ctx.font=`900 ${size}px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif`;
+    if(ctx.measureText(text).width<=maxWidth) break;
+    size-=2;
+  }
+  ctx.textAlign="center";
+  ctx.fillText(text,x,y);
+}
+function fitTextLeft(ctx,text,x,y,maxWidth,startSize,minSize){
+  let size=startSize;
+  while(size>minSize){
+    ctx.font=`800 ${size}px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif`;
+    if(ctx.measureText(text).width<=maxWidth) break;
+    size-=1;
+  }
+  ctx.textAlign="left";
+  ctx.fillText(text,x,y);
 }
 function roundRect(ctx,x,y,w,h,r){
   ctx.beginPath();
