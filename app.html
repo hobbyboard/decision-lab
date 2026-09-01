@@ -752,11 +752,138 @@ function pickDirectLunch(){
 }
 async function shareLunch(){
  if(!currentLunch){pickLunch();return}
+
  const serviceUrl="https://hobbyboard.github.io/decision-lab/";
+ const canvas=document.createElement("canvas");
+ canvas.width=1080;
+ canvas.height=1350;
+ const ctx=canvas.getContext("2d");
+
+ // background
+ ctx.fillStyle="#fffaf0";
+ ctx.fillRect(0,0,1080,1350);
+
+ // decorative blobs
+ ctx.fillStyle="#ffd84a";
+ ctx.beginPath(); ctx.arc(970,105,175,0,Math.PI*2); ctx.fill();
+ ctx.fillStyle="#ffe88f";
+ ctx.beginPath(); ctx.arc(60,1240,170,0,Math.PI*2); ctx.fill();
+
+ // top badge
+ ctx.fillStyle="#ffd22e";
+ roundRect(ctx,70,65,350,78,39); ctx.fill();
+ ctx.textAlign="center";
+ ctx.fillStyle="#171717";
+ ctx.font='900 34px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("오늘 뭐 먹지? 🍽️",245,116);
+
+ // kicker
+ ctx.fillStyle="#75512b";
+ ctx.font='800 34px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("오늘 점심은…",540,250);
+
+ // result emoji
+ ctx.fillStyle="#ffffff";
+ ctx.beginPath(); ctx.arc(540,380,90,0,Math.PI*2); ctx.fill();
+ ctx.font='82px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", sans-serif';
+ ctx.fillText(currentLunch.emoji || "🍽️",540,408);
+
+ // result name
+ ctx.fillStyle="#171717";
+ fitText(ctx,`${currentLunch.name} 당첨!`,540,545,900,78,44);
+
+ ctx.fillStyle="#7a6040";
+ ctx.font='700 29px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("점심 고민 종료. 오늘은 이걸로 가자.",540,610);
+
+ // selected conditions / direct candidates summary
+ let summaryTitle="내가 고른 조건";
+ let summaryItems=[];
+ if(lunchMode==="direct"){
+   summaryTitle="내가 넣은 후보";
+   summaryItems=[1,2,3,4,5]
+    .map(i=>(document.getElementById("direct"+i)?.value||"").trim())
+    .filter(Boolean)
+    .slice(0,5);
+ }else{
+   summaryItems=[...selectedLunchTags];
+   if(!summaryItems.length) summaryItems=["전체 메뉴 랜덤"];
+ }
+
+ ctx.textAlign="left";
+ ctx.fillStyle="#51391f";
+ ctx.font='900 30px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText(summaryTitle,70,730);
+
+ // chips
+ let x=70,y=770;
+ ctx.font='800 24px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ summaryItems.forEach(item=>{
+   const label=`✓ ${item}`;
+   const w=Math.min(300,ctx.measureText(label).width+46);
+   if(x+w>1010){x=70;y+=70}
+   ctx.fillStyle="#fff2bd";
+   roundRect(ctx,x,y,w,50,25); ctx.fill();
+   ctx.fillStyle="#5e431f";
+   ctx.fillText(label,x+20,y+33);
+   x+=w+12;
+ });
+
+ // info panel
+ const panelY=Math.max(900,y+95);
+ ctx.fillStyle="#ffffff";
+ roundRect(ctx,70,panelY,940,185,32); ctx.fill();
+
+ ctx.fillStyle="#6e5c46";
+ ctx.font='700 25px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("오늘의 결정",105,panelY+50);
+
+ ctx.fillStyle="#171717";
+ ctx.font='900 36px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ fitTextLeft(ctx,`${currentLunch.name} 먹으러 가기`,105,panelY+108,750,36,24);
+
+ ctx.textAlign="right";
+ ctx.fillStyle="#d18f00";
+ ctx.font='900 31px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("확정 ✓",955,panelY+108);
+
+ // CTA
+ const ctaY=panelY+220;
+ ctx.fillStyle="#171717";
+ roundRect(ctx,70,ctaY,940,94,32); ctx.fill();
+ ctx.textAlign="center";
+ ctx.fillStyle="#ffffff";
+ ctx.font='900 29px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("너도 오늘 점심 골라봐 →",540,ctaY+60);
+
+ ctx.fillStyle="#7a746b";
+ ctx.font='600 21px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+ ctx.fillText("hobbyboard.github.io/decision-lab",540,ctaY+145);
+
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+ const file=new File([blob],"today-lunch-result.png",{type:"image/png"});
  const text=`오늘 점심은 ${currentLunch.emoji || "🍽️"} ${currentLunch.name} 당첨 ㅋㅋ\n너도 골라봐 👇\n${serviceUrl}`;
+
  try{
-  if(navigator.share) await navigator.share({title:"오늘 뭐 먹지? | 결정장애 연구소",text});
-  else{await navigator.clipboard.writeText(text);toast("점심 결과 복사 완료")}
+   if(navigator.canShare && navigator.canShare({files:[file]})){
+     await navigator.share({
+       title:"오늘 뭐 먹지? | 결정장애 연구소",
+       text,
+       files:[file]
+     });
+   }else if(navigator.share){
+     await navigator.share({
+       title:"오늘 뭐 먹지? | 결정장애 연구소",
+       text
+     });
+   }else{
+     const a=document.createElement("a");
+     a.href=URL.createObjectURL(blob);
+     a.download="today-lunch-result.png";
+     a.click();
+     if(navigator.clipboard) await navigator.clipboard.writeText(text);
+     toast("카드 저장 + 링크 복사 완료");
+   }
  }catch(e){}
 }
 
