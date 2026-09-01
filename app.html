@@ -663,11 +663,10 @@ async function shareResult(){
 
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      // KakaoTalk creates a separate link-preview bubble for URLs included with an image.
-      // Share only the card + short caption here; the service address is already printed on the card.
+      // Keep a real clickable link in the message body.
       await navigator.share({
         title:"결정장애 연구소",
-        text:shortText,
+        text:linkText,
         files:[file]
       });
     }else if(navigator.share){
