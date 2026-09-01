@@ -381,6 +381,20 @@ h1{
 }
 </style>
 
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="결정장애 연구소">
+<meta property="og:description" content="이거 사려면 내 인생 몇 시간이 필요할까? 가격을 노동시간과 회사생활 밈으로 바꿔보세요.">
+<meta property="og:url" content="https://hobbyboard.github.io/decision-lab/">
+<meta property="og:image" content="https://hobbyboard.github.io/decision-lab/og-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="결정장애 연구소">
+<meta name="twitter:description" content="이거 사려면 내 인생 몇 시간이 필요할까?">
+<meta name="twitter:image" content="https://hobbyboard.github.io/decision-lab/og-preview.png">
+<link rel="canonical" href="https://hobbyboard.github.io/decision-lab/">
+
 </head>
 <body>
 <div class="app">
@@ -644,19 +658,19 @@ async function shareResult(){
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
   const file=new File([blob],"decision-lab-result.png",{type:"image/png"});
 
-  const detailLines=chosen.map(u=>`${u[0]} ${u[1]} ${unitCount(u)}`).join("\n");
-  const text=`내 돈을 회사생활로 바꿔봤더니…\n${hero[0]} ${hero[1]} ${heroCount}짜리 소비래 ㅋㅋ\n\n다른 말로 하면\n${detailLines}\n\n너라면 살래?\n${serviceUrl}`;
+  const text=`${hero[0]} ${hero[1]} ${heroCount}짜리 소비래 ㅋㅋ\n너도 해봐 👇\n${serviceUrl}`;
 
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
+      // KakaoTalk/iOS can duplicate the URL when both text and url are supplied.
+      // Put the URL only in the text so the message arrives as one compact block.
       await navigator.share({
         title:"결정장애 연구소",
         text,
-        url:serviceUrl,
         files:[file]
       });
     }else if(navigator.share){
-      await navigator.share({title:"결정장애 연구소",text,url:serviceUrl});
+      await navigator.share({title:"결정장애 연구소",text});
     }else{
       const a=document.createElement("a");
       a.href=URL.createObjectURL(blob);
