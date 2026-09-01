@@ -435,7 +435,7 @@ h1{
 
     <div class="meme-card">
       <div class="small">한 줄 요약</div>
-      <div class="headline" id="memeHeadline">김부장 개소리 15회짜리 가방입니다.</div>
+      <div class="headline" id="memeHeadline">김팀장 잔소리 15회짜리 가방입니다.</div>
       <div class="detail">당신의 돈을 그냥 원으로 보지 말고, 실제로 버틴 시간으로 보세요.</div>
     </div>
 
@@ -456,7 +456,7 @@ h1{
 
     <div class="sharecard">
       <div class="kicker">공유용 카드</div>
-      <div class="quote" id="shareQuote">나는 이 가방을 사기 위해<br>김부장 개소리 15회를 버텨야 한다.</div>
+      <div class="quote" id="shareQuote">나는 이 가방을 사기 위해<br>김팀장 잔소리 15회를 버텨야 한다.</div>
       <div class="brandline">결정장애 연구소 · 내 돈 몇 시간이야?</div>
     </div>
     <button class="button ghost" style="margin-top:10px" onclick="shareResult()">📤 결과 공유하기</button>
@@ -479,7 +479,7 @@ h1{
 <script>
 let state={price:89000,salary:5000000,totalMinutes:223};
 const units=[
- ["🧑‍💼","김부장 개소리",15],
+ ["🧑‍💼","김팀장 잔소리",15],
  ["🪑","의미 없는 회의",60],
  ["💻","퇴근 직전 업무지시",30],
  ["📊","PPT 한 장 만들기",30],
@@ -517,15 +517,15 @@ function renderUnits(){
  }).join("");
  document.getElementById("unitList").innerHTML=html;
  const boss=Math.max(1,Math.round(state.totalMinutes/15));
- document.getElementById("memeHeadline").textContent=`김부장 개소리 ${boss}회짜리 소비입니다.`;
- document.getElementById("shareQuote").innerHTML=`나는 이걸 사기 위해<br>김부장 개소리 ${boss}회를 버텨야 한다.`;
+ document.getElementById("memeHeadline").textContent=`김팀장 잔소리 ${boss}회짜리 소비입니다.`;
+ document.getElementById("shareQuote").innerHTML=`나는 이걸 사기 위해<br>김팀장 잔소리 ${boss}회를 버텨야 한다.`;
 }
 function renderVerdict(){
  const ratio=state.price/state.salary*100;
  let t="";
  if(ratio<1) t="🟢 이 정도면 괜찮아요. 작은 소비에 가까워요.";
  else if(ratio<3) t="🟡 하루 정도 고민해보세요. 충동인지 필요인지 딱 한 번만 더 확인.";
- else if(ratio<5) t="🟠 꽤 큰 소비입니다. 김부장을 더 오래 견딜 만큼 원하는지 생각해보세요.";
+ else if(ratio<5) t="🟠 꽤 큰 소비입니다. 김팀장을 더 오래 견딜 만큼 원하는지 생각해보세요.";
  else t="🔴 지금은 참는 쪽을 추천합니다. 통장이 이미 구조 요청 중이에요.";
  document.getElementById("verdictText").textContent=t;
 }
