@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f6f2">
+<title>결정장애 연구소</title>
+<style>
+:root{
+  --bg:#f7f6f2; --card:#ffffff; --text:#151515; --muted:#7a7a74; --line:#e9e7e1;
+  --soft:#efeee9; --dark:#171717;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+body{min-height:100vh}
+.app{
+  width:100%;max-width:430px;min-height:100vh;margin:0 auto;background:var(--bg);
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+.top{padding:18px 20px 8px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:900;font-size:16px}
+.chip{font-size:11px;padding:7px 10px;border-radius:999px;background:#ecebe6;color:#666}
+.screen{display:none;padding:18px 20px 38px;animation:fade .2s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:13px;color:var(--muted);font-weight:800;margin-top:16px}
+h1{font-size:36px;line-height:1.08;letter-spacing:-1.8px;margin:9px 0 26px}
+.sub{font-size:15px;line-height:1.55;color:#555;margin-top:-10px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 3px 18px rgba(0,0,0,.025)}
+.stack{display:grid;gap:12px}
+.label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:9px}
+.moneybox{
+  height:68px;border-radius:17px;background:#f3f2ee;display:flex;align-items:center;padding:0 16px;gap:10px
+}
+.moneybox b{font-size:25px}
+.moneybox input{
+  flex:1;border:0;background:transparent;text-align:right;font-size:28px;font-weight:900;outline:none;color:var(--text);min-width:0
+}
+.button{
+  width:100%;border:0;border-radius:17px;padding:17px 18px;font-size:16px;font-weight:900;cursor:pointer
+}
+.primary{background:var(--dark);color:white}
+.secondary{background:#ecebe6;color:#1f1f1f}
+.ghost{background:transparent;border:1px solid #dddcd7;color:#333}
+.segment{display:flex;gap:8px}
+.segment button{flex:1;border:1px solid #dddcd7;background:white;border-radius:13px;padding:13px 8px;font-weight:800}
+.segment button.active{background:var(--dark);color:white;border-color:var(--dark)}
+.helper{font-size:11px;color:#9a9993;line-height:1.5;margin-top:12px}
+.back{background:none;border:0;padding:0;color:#73736d;font-size:14px;font-weight:700;margin-bottom:12px}
+.hero{text-align:center;padding-top:8px}
+.hero .price{font-size:26px;font-weight:900}
+.hero .caption{font-size:13px;color:var(--muted);font-weight:700}
+.hero .big{font-size:62px;font-weight:950;letter-spacing:-4px;line-height:1;margin:10px 0 8px}
+.hero .ratio{font-size:13px;color:var(--muted)}
+.section-title{font-size:19px;font-weight:900;margin:28px 0 12px}
+.meme-card{background:#171717;color:white;border-radius:28px;padding:24px 20px;margin-top:12px}
+.meme-card .small{font-size:12px;opacity:.7;font-weight:700}
+.meme-card .headline{font-size:30px;line-height:1.15;font-weight:950;letter-spacing:-1px;margin:8px 0}
+.meme-card .detail{font-size:15px;opacity:.84;line-height:1.5}
+.unit-list{background:white;border:1px solid var(--line);border-radius:22px;padding:4px 18px}
+.unit{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #eee}
+.unit:last-child{border-bottom:0}
+.unit .left{font-weight:850}
+.unit .right{font-size:17px;font-weight:950}
+.verdict{background:#eeeade;border-radius:22px;padding:20px;margin-top:16px}
+.verdict h3{margin:0 0 8px;font-size:19px}
+.verdict p{margin:0;font-size:15px;line-height:1.55;color:#444}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.actions .full{grid-column:1/-1}
+.sharecard{
+  margin-top:16px;background:white;border:1px solid var(--line);border-radius:28px;padding:26px 22px;text-align:center
+}
+.sharecard .kicker{font-size:12px;color:var(--muted);font-weight:800}
+.sharecard .quote{font-size:28px;line-height:1.22;font-weight:950;letter-spacing:-1.2px;margin:10px 0}
+.sharecard .brandline{font-size:12px;color:#888;margin-top:18px}
+.random-stage{text-align:center;padding:34px 0 18px}
+.dice{font-size:70px;display:inline-block}
+.spinning{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.random-result{font-size:48px;font-weight:950;letter-spacing:-2px;margin:14px 0}
+.toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:#171717;color:white;padding:12px 16px;border-radius:999px;font-size:13px;font-weight:800;
+  opacity:0;pointer-events:none;transition:.2s;white-space:nowrap
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">결정장애 연구소</div>
+    <div class="chip">내 돈 몇 시간이야?</div>
+  </div>
+
+  <section id="step1" class="screen active">
+    <div class="eyebrow">구매 직전 30초 판결</div>
+    <h1>이거 사려고?<br>얼마짜리야?</h1>
+    <p class="sub">원화 가격만 넣어도 됩니다. 월급 대비 몇 시간짜리 소비인지 바로 바꿔드릴게요.</p>
+    <div class="stack">
+      <div class="card">
+        <div class="label">상품 가격</div>
+        <div class="moneybox"><b>₩</b><input id="price" inputmode="numeric" value="89000"></div>
+      </div>
+      <button class="button primary" onclick="goSalary()">내 인생으로 환산하기 →</button>
+    </div>
+  </section>
+
+  <section id="step2" class="screen">
+    <button class="back" onclick="show('step1')">← 돌아가기</button>
+    <div class="eyebrow">당신의 시간값</div>
+    <h1>한 달에<br>얼마 벌어?</h1>
+    <div class="stack">
+      <div class="card">
+        <div class="label">월급</div>
+        <div class="moneybox"><b>₩</b><input id="salary" inputmode="numeric" value="5000000"></div>
+      </div>
+      <div>
+        <div class="label">급여 기준</div>
+        <div class="segment">
+          <button class="active" onclick="toggleSeg(this)">세전</button>
+          <button onclick="toggleSeg(this)">세후</button>
+        </div>
+      </div>
+      <button class="button primary" onclick="calculate()">계산하기 →</button>
+      <div class="helper">※ 재미와 소비 판단을 위한 참고용입니다. 노동시간은 월 209시간을 기준으로 단순 환산합니다.</div>
+    </div>
+  </section>
+
+  <section id="result" class="screen">
+    <button class="back" onclick="show('step2')">← 다시 계산하기</button>
+    <div class="hero">
+      <div class="caption">이 물건의 가격</div>
+      <div class="price" id="rPrice">₩89,000</div>
+      <div class="caption" style="margin-top:24px">당신의 노동</div>
+      <div class="big" id="rHours">3시간 43분</div>
+      <div class="ratio" id="rRatio">월급의 1.78%</div>
+    </div>
+
+    <div class="meme-card">
+      <div class="small">한 줄 요약</div>
+      <div class="headline" id="memeHeadline">김부장 개소리 15회짜리 가방입니다.</div>
+      <div class="detail">당신의 돈을 그냥 원으로 보지 말고, 실제로 버틴 시간으로 보세요.</div>
+    </div>
+
+    <div class="section-title">이걸 다른 말로 하면…</div>
+    <div class="unit-list" id="unitList"></div>
+    <button class="button ghost" style="margin-top:10px" onclick="renderUnits()">🔄 다른 방식으로 보기</button>
+
+    <div class="verdict">
+      <h3>🧑‍⚖️ 결정장애 연구소의 판결</h3>
+      <p id="verdictText">하루 정도 고민해보세요.</p>
+    </div>
+
+    <div class="actions">
+      <button class="button secondary" onclick="toast('좋습니다. 구매 허락 🛒')">🛒 그래도 산다</button>
+      <button class="button secondary" onclick="delay24()">⏰ 24시간 미룬다</button>
+      <button class="button primary full" onclick="goRandom()">🎲 운명에게 맡긴다</button>
+    </div>
+
+    <div class="sharecard">
+      <div class="kicker">공유용 카드</div>
+      <div class="quote" id="shareQuote">나는 이 가방을 사기 위해<br>김부장 개소리 15회를 버텨야 한다.</div>
+      <div class="brandline">결정장애 연구소 · 내 돈 몇 시간이야?</div>
+    </div>
+    <button class="button ghost" style="margin-top:10px" onclick="shareResult()">📤 결과 공유하기</button>
+  </section>
+
+  <section id="random" class="screen">
+    <button class="back" onclick="show('result')">← 결과로 돌아가기</button>
+    <div class="eyebrow">생각하기 싫다면</div>
+    <h1>운명에게<br>넘겨버리자.</h1>
+    <div class="random-stage">
+      <div id="dice" class="dice">🎲</div>
+      <div id="randomResult" class="random-result">결정 중...</div>
+      <div id="randomCopy" class="sub">당신의 통장과 욕망이 싸우는 중입니다.</div>
+    </div>
+    <button class="button primary" onclick="runRandom()">다시 운명에 맡기기</button>
+  </section>
+</div>
+<div id="toast" class="toast">복사했어요</div>
+
+<script>
+let state={price:89000,salary:5000000,totalMinutes:223};
+const units=[
+ ["🧑‍💼","김부장 개소리",15],
+ ["🪑","의미 없는 회의",60],
+ ["💻","퇴근 직전 업무지시",30],
+ ["📊","PPT 한 장 만들기",30],
+ ["📧","의미 없는 메일",10],
+ ["☕","회사에서 멍때리기",10],
+ ["🚇","출퇴근",120],
+ ["📅","월요일 출근",480],
+ ["😬","상사 농담에 웃기",3],
+ ["🗣️","“간단한 수정 하나만”",20]
+];
+function fmt(n){return Math.round(n).toLocaleString("ko-KR")}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0)}
+function goSalary(){show("step2")}
+function toggleSeg(el){el.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));el.classList.add("active")}
+function calculate(){
+ state.price=Number(document.getElementById("price").value.replace(/\D/g,''))||0;
+ state.salary=Number(document.getElementById("salary").value.replace(/\D/g,''))||1;
+ const hours=state.price/(state.salary/209);
+ state.totalMinutes=Math.max(1,Math.round(hours*60));
+ const h=Math.floor(state.totalMinutes/60),m=state.totalMinutes%60;
+ document.getElementById("rPrice").textContent="₩"+fmt(state.price);
+ document.getElementById("rHours").textContent=h+"시간 "+m+"분";
+ document.getElementById("rRatio").textContent="월급의 "+(state.price/state.salary*100).toFixed(2)+"%";
+ renderUnits();
+ renderVerdict();
+ show("result");
+}
+function sample(arr,n){return [...arr].sort(()=>Math.random()-.5).slice(0,n)}
+function renderUnits(){
+ const chosen=sample(units,3);
+ const html=chosen.map(u=>{
+   const count=state.totalMinutes/u[2];
+   const shown=count>=10?Math.round(count)+"회":count.toFixed(1)+"회";
+   return `<div class="unit"><div class="left">${u[0]} ${u[1]}</div><div class="right">${shown}</div></div>`
+ }).join("");
+ document.getElementById("unitList").innerHTML=html;
+ const boss=Math.max(1,Math.round(state.totalMinutes/15));
+ document.getElementById("memeHeadline").textContent=`김부장 개소리 ${boss}회짜리 소비입니다.`;
+ document.getElementById("shareQuote").innerHTML=`나는 이걸 사기 위해<br>김부장 개소리 ${boss}회를 버텨야 한다.`;
+}
+function renderVerdict(){
+ const ratio=state.price/state.salary*100;
+ let t="";
+ if(ratio<1) t="🟢 이 정도면 괜찮아요. 작은 소비에 가까워요.";
+ else if(ratio<3) t="🟡 하루 정도 고민해보세요. 충동인지 필요인지 딱 한 번만 더 확인.";
+ else if(ratio<5) t="🟠 꽤 큰 소비입니다. 김부장을 더 오래 견딜 만큼 원하는지 생각해보세요.";
+ else t="🔴 지금은 참는 쪽을 추천합니다. 통장이 이미 구조 요청 중이에요.";
+ document.getElementById("verdictText").textContent=t;
+}
+function delay24(){
+ localStorage.setItem("decisionLabHold",JSON.stringify({price:state.price,salary:state.salary,createdAt:Date.now()}));
+ toast("24시간 고민 목록에 넣었어요 ⏰");
+}
+function goRandom(){show("random");runRandom()}
+function runRandom(){
+ const dice=document.getElementById("dice"), rr=document.getElementById("randomResult"), rc=document.getElementById("randomCopy");
+ dice.classList.add("spinning"); rr.textContent="결정 중..."; rc.textContent="당신의 통장과 욕망이 싸우는 중입니다.";
+ setTimeout(()=>{
+   dice.classList.remove("spinning");
+   const buy=Math.random()<0.5;
+   rr.textContent=buy?"사세요.":"사지 마세요.";
+   rc.textContent=buy?"오늘은 당신의 날입니다. 운명이 허락했습니다.":"통장이 당신에게 감사할 것입니다.";
+ },900);
+}
+async function shareResult(){
+ const text=`₩${fmt(state.price)} = 내 노동 ${document.getElementById("rHours").textContent}\n${document.getElementById("memeHeadline").textContent}\n\n결정장애 연구소`;
+ try{
+   if(navigator.share){await navigator.share({title:"내 돈 몇 시간이야?",text});}
+   else if(navigator.clipboard){await navigator.clipboard.writeText(text);toast("결과를 복사했어요 📋");}
+   else toast("공유 기능은 브라우저에서 확인해 주세요");
+ }catch(e){}
+}
+function toast(msg){
+ const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+ setTimeout(()=>t.classList.remove("show"),1600);
+}
+</script>
+</body>
+</html>
