@@ -460,6 +460,7 @@ h1{
       <div class="brandline">결정장애 연구소 · 내 돈 몇 시간이야?</div>
     </div>
     <button class="button ghost" style="margin-top:10px" onclick="shareResult()">📤 결과 공유하기</button>
+    <div class="helper" style="text-align:center">🔒 공유 카드에는 상품 가격과 월급을 숨겨 월급 역산을 어렵게 합니다.</div>
   </section>
 
   <section id="random" class="screen">
@@ -545,12 +546,80 @@ function runRandom(){
  },900);
 }
 async function shareResult(){
- const text=`₩${fmt(state.price)} = 내 노동 ${document.getElementById("rHours").textContent}\n${document.getElementById("memeHeadline").textContent}\n\n결정장애 연구소`;
- try{
-   if(navigator.share){await navigator.share({title:"내 돈 몇 시간이야?",text});}
-   else if(navigator.clipboard){await navigator.clipboard.writeText(text);toast("결과를 복사했어요 📋");}
-   else toast("공유 기능은 브라우저에서 확인해 주세요");
- }catch(e){}
+  const boss=Math.max(1,Math.round(state.totalMinutes/15));
+  const serviceUrl="https://hobbyboard.github.io/decision-lab/";
+  const canvas=document.createElement("canvas");
+  canvas.width=1080; canvas.height=1350;
+  const ctx=canvas.getContext("2d");
+
+  ctx.fillStyle="#f7f6f2";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.textAlign="center";
+  ctx.fillStyle="#151515";
+  ctx.font='700 34px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("결정장애 연구소",540,120);
+
+  ctx.fillStyle="#777";
+  ctx.font='600 28px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("이 물건의 진짜 가격은",540,290);
+
+  ctx.fillStyle="#151515";
+  ctx.font='900 62px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("김팀장 잔소리",540,470);
+
+  ctx.font='900 150px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText(boss+"회",540,670);
+
+  ctx.fillStyle="#555";
+  ctx.font='700 38px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("그래도 살까?",540,820);
+
+  ctx.fillStyle="#171717";
+  roundRect(ctx,130,930,820,150,42);
+  ctx.fill();
+  ctx.fillStyle="#fff";
+  ctx.font='800 38px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("나도 내 돈을 시간으로 바꿔보기",540,1025);
+
+  ctx.fillStyle="#777";
+  ctx.font='500 25px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("공유 카드에는 상품 가격과 월급을 표시하지 않아요",540,1190);
+  ctx.font='700 24px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.fillText("hobbyboard.github.io/decision-lab",540,1250);
+
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+  const file=new File([blob],"decision-lab-result.png",{type:"image/png"});
+  const text=`김팀장 잔소리 ${boss}회짜리 소비래 ㅋㅋ\n너라면 살래?\n\n${serviceUrl}`;
+
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        title:"결정장애 연구소",
+        text,
+        url:serviceUrl,
+        files:[file]
+      });
+    }else if(navigator.share){
+      await navigator.share({title:"결정장애 연구소",text,url:serviceUrl});
+    }else{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download="decision-lab-result.png";
+      a.click();
+      if(navigator.clipboard) await navigator.clipboard.writeText(serviceUrl);
+      toast("카드 저장 + 서비스 링크 복사 완료");
+    }
+  }catch(e){}
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
 }
 function toast(msg){
  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
