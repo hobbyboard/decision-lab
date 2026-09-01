@@ -379,6 +379,30 @@ h1{
   .actions{grid-template-columns:1fr}
   .actions .full{grid-column:auto}
 }
+
+.service-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:calc(100% - 32px);max-width:398px;margin:8px auto 0;padding:5px;border-radius:18px;background:#ebe9e3}
+.service-tab{min-width:0;border:0;border-radius:14px;padding:11px 8px;background:transparent;color:#77746d;font-size:14px;font-weight:900}
+.service-tab.active{background:#171717;color:#fff}
+.service-page{display:none}
+.service-page.active{display:block}
+.lunch-hero{text-align:center;padding:24px 0 10px}
+.lunch-hero .emoji{font-size:54px}
+.lunch-hero h1{margin:10px 0 8px}
+.lunch-hero p{margin:0;color:#77746d;font-size:14px;line-height:1.5}
+.lunch-card{width:100%;padding:18px;border:1px solid var(--line);border-radius:24px;background:#fff}
+.lunch-section-title{margin:0 0 12px;font-size:15px;font-weight:900}
+.menu-chips{display:flex;flex-wrap:wrap;gap:8px}
+.menu-chip{border:1px solid #dddcd7;border-radius:999px;padding:10px 13px;background:#fff;font-size:14px;font-weight:800;color:#333}
+.menu-chip.selected{border-color:#171717;background:#171717;color:#fff}
+.lunch-result{display:none;margin-top:14px;padding:26px 18px;border-radius:28px;background:#171717;color:#fff;text-align:center}
+.lunch-result.show{display:block}
+.lunch-result .mini{font-size:12px;opacity:.65;font-weight:800}
+.food-emoji{margin:14px 0 4px;font-size:58px}
+.food-name{margin:4px 0 8px;font-size:clamp(34px,10vw,44px);font-weight:950;letter-spacing:-1.5px}
+.food-line{font-size:14px;opacity:.82}
+.lunch-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.lunch-empty{margin-top:10px;font-size:12px;line-height:1.5;color:#8c8a83}
+
 </style>
 
 
@@ -402,6 +426,13 @@ h1{
     <div class="brand">결정장애 연구소</div>
     <div class="chip">내 돈 몇 시간이야?</div>
   </div>
+
+  <div class="service-tabs">
+    <button class="service-tab active" id="tabBuy" onclick="switchService('buy')">🛍️ 살까 말까</button>
+    <button class="service-tab" id="tabLunch" onclick="switchService('lunch')">🍽️ 오늘 뭐 먹지?</button>
+  </div>
+
+  <div class="service-page active" id="buyService">
 
   <section id="step1" class="screen active">
     <div class="eyebrow">구매 직전 30초 판결</div>
@@ -494,10 +525,100 @@ h1{
     </div>
     <button class="button primary" onclick="runRandom()">다시 운명에 맡기기</button>
   </section>
+  </div>
+
+  <div class="service-page" id="lunchService">
+    <section class="screen active">
+      <div class="lunch-hero">
+        <div class="emoji">🍱</div>
+        <div class="eyebrow">점심시간 10초 결정</div>
+        <h1>오늘 뭐 먹지?</h1>
+        <p>고민은 내가 할게.<br>먹기 싫은 것만 빼고 바로 뽑아.</p>
+      </div>
+
+      <div class="stack">
+        <div class="lunch-card">
+          <div class="lunch-section-title">오늘 당기는 쪽을 골라줘</div>
+          <div class="menu-chips" id="menuChips"></div>
+          <div class="lunch-empty">여러 개 선택 가능 · 아무것도 안 고르면 전체 메뉴에서 뽑아요.</div>
+        </div>
+
+        <button class="button primary" onclick="pickLunch()">오늘 점심 정해줘 →</button>
+
+        <div class="lunch-result" id="lunchResult">
+          <div class="mini">오늘의 점심 판결</div>
+          <div class="food-emoji" id="lunchEmoji">🍜</div>
+          <div class="food-name" id="lunchName">라멘</div>
+          <div class="food-line" id="lunchLine">오늘은 이거다. 더 생각하지 마.</div>
+          <div class="lunch-actions">
+            <button class="button secondary" onclick="pickLunch()">🎲 다시 뽑기</button>
+            <button class="button secondary" onclick="shareLunch()">📤 공유하기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </div>
 <div id="toast" class="toast">복사했어요</div>
 
 <script>
+
+const lunchMenus=[
+ {name:"김치찌개",emoji:"🍲",tags:["한식","국물"]},{name:"제육볶음",emoji:"🥘",tags:["한식","든든"]},
+ {name:"비빔밥",emoji:"🍚",tags:["한식","가벼움"]},{name:"국밥",emoji:"🥣",tags:["한식","국물","든든"]},
+ {name:"칼국수",emoji:"🍜",tags:["한식","면","국물"]},{name:"냉면",emoji:"🍜",tags:["한식","면","가벼움"]},
+ {name:"돈까스",emoji:"🍛",tags:["일식","든든"]},{name:"초밥",emoji:"🍣",tags:["일식","가벼움"]},
+ {name:"라멘",emoji:"🍜",tags:["일식","면","국물"]},{name:"덮밥",emoji:"🍚",tags:["일식","든든"]},
+ {name:"쌀국수",emoji:"🍜",tags:["아시안","면","국물"]},{name:"팟타이",emoji:"🍝",tags:["아시안","면"]},
+ {name:"마라탕",emoji:"🌶️",tags:["중식","국물","매운맛"]},{name:"짜장면",emoji:"🍜",tags:["중식","면"]},
+ {name:"짬뽕",emoji:"🍜",tags:["중식","면","국물","매운맛"]},{name:"햄버거",emoji:"🍔",tags:["양식","간단"]},
+ {name:"파스타",emoji:"🍝",tags:["양식","면"]},{name:"샌드위치",emoji:"🥪",tags:["양식","가벼움","간단"]},
+ {name:"샐러드",emoji:"🥗",tags:["가벼움"]},{name:"분식",emoji:"🍢",tags:["한식","간단","매운맛"]},
+ {name:"김밥",emoji:"🍙",tags:["한식","간단","가벼움"]},{name:"치킨",emoji:"🍗",tags:["든든"]},
+ {name:"피자",emoji:"🍕",tags:["양식","든든"]},{name:"카레",emoji:"🍛",tags:["든든"]}
+];
+const lunchTags=["한식","일식","중식","아시안","양식","면","국물","든든","가벼움","간단","매운맛"];
+let selectedLunchTags=new Set(), currentLunch=null;
+
+function switchService(name){
+ const buy=name==="buy";
+ document.getElementById("buyService").classList.toggle("active",buy);
+ document.getElementById("lunchService").classList.toggle("active",!buy);
+ document.getElementById("tabBuy").classList.toggle("active",buy);
+ document.getElementById("tabLunch").classList.toggle("active",!buy);
+ document.querySelector(".chip").textContent=buy?"내 돈 몇 시간이야?":"오늘 뭐 먹지?";
+ window.scrollTo(0,0);
+}
+function renderLunchChips(){
+ const wrap=document.getElementById("menuChips");
+ if(!wrap) return;
+ wrap.innerHTML=lunchTags.map(tag=>`<button class="menu-chip" onclick="toggleLunchTag(this,'${tag}')">${tag}</button>`).join("");
+}
+function toggleLunchTag(el,tag){
+ if(selectedLunchTags.has(tag)){selectedLunchTags.delete(tag);el.classList.remove("selected")}
+ else{selectedLunchTags.add(tag);el.classList.add("selected")}
+}
+function pickLunch(){
+ let pool=selectedLunchTags.size?lunchMenus.filter(m=>m.tags.some(t=>selectedLunchTags.has(t))):lunchMenus;
+ if(!pool.length) pool=lunchMenus;
+ currentLunch=pool[Math.floor(Math.random()*pool.length)];
+ const lines=["오늘은 이거다. 더 생각하지 마.","점심 고민 종료. 이걸로 가자.","메뉴 회의 끝. 오늘은 이거.","배고프면 고민도 길어진다. 바로 가.","오늘 점심 운명은 이쪽입니다."];
+ document.getElementById("lunchEmoji").textContent=currentLunch.emoji;
+ document.getElementById("lunchName").textContent=currentLunch.name;
+ document.getElementById("lunchLine").textContent=lines[Math.floor(Math.random()*lines.length)];
+ document.getElementById("lunchResult").classList.add("show");
+ setTimeout(()=>document.getElementById("lunchResult").scrollIntoView({behavior:"smooth",block:"center"}),50);
+}
+async function shareLunch(){
+ if(!currentLunch){pickLunch();return}
+ const serviceUrl="https://hobbyboard.github.io/decision-lab/";
+ const text=`오늘 점심은 ${currentLunch.emoji} ${currentLunch.name} 당첨 ㅋㅋ\n너도 골라봐 👇\n${serviceUrl}`;
+ try{
+  if(navigator.share) await navigator.share({title:"오늘 뭐 먹지? | 결정장애 연구소",text});
+  else{await navigator.clipboard.writeText(text);toast("점심 결과 복사 완료")}
+ }catch(e){}
+}
+
 let state={item:"이거",price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
 const units=[
  ["🧑‍💼","김팀장 잔소리",15],
@@ -722,6 +843,7 @@ function toast(msg){
  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
  setTimeout(()=>t.classList.remove("show"),1600);
 }
+renderLunchChips();
 </script>
 </body>
 </html>
