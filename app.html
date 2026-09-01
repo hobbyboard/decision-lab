@@ -403,6 +403,50 @@ h1{
 .lunch-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .lunch-empty{margin-top:10px;font-size:12px;line-height:1.5;color:#8c8a83}
 
+
+.lunch-mode-tabs{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  padding:5px;
+  margin-bottom:12px;
+  border-radius:16px;
+  background:#eeece6;
+}
+.lunch-mode-tab{
+  min-width:0;
+  border:0;
+  border-radius:12px;
+  padding:11px 8px;
+  background:transparent;
+  font-size:13px;
+  font-weight:900;
+  color:#77746d;
+}
+.lunch-mode-tab.active{background:#fff;color:#171717;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.lunch-mode-panel{display:none}
+.lunch-mode-panel.active{display:block}
+.direct-list{display:grid;gap:9px}
+.direct-row{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:9px}
+.direct-num{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#f0eee8;font-size:12px;font-weight:900;color:#77746d
+}
+.direct-input{
+  width:100%;min-width:0;border:1px solid #dedbd3;border-radius:14px;
+  padding:13px 14px;background:#fff;outline:none;font-size:15px
+}
+.direct-input:focus{border-color:#171717}
+.filter-note{
+  margin-top:12px;padding:11px 12px;border-radius:13px;
+  background:#f4f2ec;color:#77746d;font-size:12px;line-height:1.5
+}
+.match-badge{
+  display:inline-block;margin-top:10px;padding:7px 10px;border-radius:999px;
+  background:rgba(255,255,255,.12);font-size:11px;font-weight:800
+}
+
 </style>
 
 
@@ -537,21 +581,43 @@ h1{
       </div>
 
       <div class="stack">
-        <div class="lunch-card">
-          <div class="lunch-section-title">오늘 당기는 쪽을 골라줘</div>
-          <div class="menu-chips" id="menuChips"></div>
-          <div class="lunch-empty">여러 개 선택 가능 · 아무것도 안 고르면 전체 메뉴에서 뽑아요.</div>
+        <div class="lunch-mode-tabs">
+          <button class="lunch-mode-tab active" id="modeRecommend" onclick="switchLunchMode('recommend')">✨ 취향으로 추천</button>
+          <button class="lunch-mode-tab" id="modeDirect" onclick="switchLunchMode('direct')">🎯 직접 입력</button>
         </div>
 
-        <button class="button primary" onclick="pickLunch()">오늘 점심 정해줘 →</button>
+        <div class="lunch-mode-panel active" id="recommendPanel">
+          <div class="lunch-card">
+            <div class="lunch-section-title">오늘 당기는 쪽을 골라줘</div>
+            <div class="menu-chips" id="menuChips"></div>
+            <div class="filter-note">종류(한식·일식 등)는 선택한 것 중 하나, 취향(국물·가벼움 등)은 가능한 한 많이 맞는 메뉴를 우선 추천해요.</div>
+          </div>
+          <button class="button primary" style="margin-top:12px" onclick="pickLunch()">오늘 점심 정해줘 →</button>
+        </div>
+
+        <div class="lunch-mode-panel" id="directPanel">
+          <div class="lunch-card">
+            <div class="lunch-section-title">후보를 직접 적어줘</div>
+            <div class="direct-list">
+              <div class="direct-row"><div class="direct-num">1</div><input class="direct-input" id="direct1" placeholder="예: 김치찌개 / 미도인"></div>
+              <div class="direct-row"><div class="direct-num">2</div><input class="direct-input" id="direct2" placeholder="예: 쌀국수 / 포메인"></div>
+              <div class="direct-row"><div class="direct-num">3</div><input class="direct-input" id="direct3" placeholder="예: 돈까스 / 정돈"></div>
+              <div class="direct-row"><div class="direct-num">4</div><input class="direct-input" id="direct4" placeholder="선택 입력"></div>
+              <div class="direct-row"><div class="direct-num">5</div><input class="direct-input" id="direct5" placeholder="선택 입력"></div>
+            </div>
+            <div class="lunch-empty">식당 이름도, 메뉴 이름도 OK · 최대 5개</div>
+          </div>
+          <button class="button primary" style="margin-top:12px" onclick="pickDirectLunch()">이 중에서 하나 골라줘 →</button>
+        </div>
 
         <div class="lunch-result" id="lunchResult">
           <div class="mini">오늘의 점심 판결</div>
           <div class="food-emoji" id="lunchEmoji">🍜</div>
           <div class="food-name" id="lunchName">라멘</div>
           <div class="food-line" id="lunchLine">오늘은 이거다. 더 생각하지 마.</div>
+          <div class="match-badge" id="matchBadge" style="display:none"></div>
           <div class="lunch-actions">
-            <button class="button secondary" onclick="pickLunch()">🎲 다시 뽑기</button>
+            <button class="button secondary" id="lunchRetryBtn" onclick="pickLunch()">🎲 다시 뽑기</button>
             <button class="button secondary" onclick="shareLunch()">📤 공유하기</button>
           </div>
         </div>
@@ -578,7 +644,7 @@ const lunchMenus=[
  {name:"피자",emoji:"🍕",tags:["양식","든든"]},{name:"카레",emoji:"🍛",tags:["든든"]}
 ];
 const lunchTags=["한식","일식","중식","아시안","양식","면","국물","든든","가벼움","간단","매운맛"];
-let selectedLunchTags=new Set(), currentLunch=null;
+let selectedLunchTags=new Set(), currentLunch=null, lunchMode="recommend";
 
 function switchService(name){
  const buy=name==="buy";
@@ -589,6 +655,15 @@ function switchService(name){
  document.querySelector(".chip").textContent=buy?"내 돈 몇 시간이야?":"오늘 뭐 먹지?";
  window.scrollTo(0,0);
 }
+function switchLunchMode(mode){
+ lunchMode=mode;
+ const rec=mode==="recommend";
+ document.getElementById("recommendPanel").classList.toggle("active",rec);
+ document.getElementById("directPanel").classList.toggle("active",!rec);
+ document.getElementById("modeRecommend").classList.toggle("active",rec);
+ document.getElementById("modeDirect").classList.toggle("active",!rec);
+ document.getElementById("lunchResult").classList.remove("show");
+}
 function renderLunchChips(){
  const wrap=document.getElementById("menuChips");
  if(!wrap) return;
@@ -598,21 +673,87 @@ function toggleLunchTag(el,tag){
  if(selectedLunchTags.has(tag)){selectedLunchTags.delete(tag);el.classList.remove("selected")}
  else{selectedLunchTags.add(tag);el.classList.add("selected")}
 }
-function pickLunch(){
- let pool=selectedLunchTags.size?lunchMenus.filter(m=>m.tags.some(t=>selectedLunchTags.has(t))):lunchMenus;
- if(!pool.length) pool=lunchMenus;
- currentLunch=pool[Math.floor(Math.random()*pool.length)];
- const lines=["오늘은 이거다. 더 생각하지 마.","점심 고민 종료. 이걸로 가자.","메뉴 회의 끝. 오늘은 이거.","배고프면 고민도 길어진다. 바로 가.","오늘 점심 운명은 이쪽입니다."];
- document.getElementById("lunchEmoji").textContent=currentLunch.emoji;
- document.getElementById("lunchName").textContent=currentLunch.name;
+function lunchCandidates(){
+ const selected=[...selectedLunchTags];
+ if(!selected.length) return {pool:lunchMenus,score:0,matched:[]};
+
+ const cuisineTags=["한식","일식","중식","아시안","양식"];
+ const selectedCuisine=selected.filter(t=>cuisineTags.includes(t));
+ const selectedPrefs=selected.filter(t=>!cuisineTags.includes(t));
+
+ // 1) Cuisine works as OR: choosing 한식+일식 means either is acceptable.
+ let base=lunchMenus.filter(m=>{
+   if(!selectedCuisine.length) return true;
+   return selectedCuisine.some(t=>m.tags.includes(t));
+ });
+
+ if(!base.length) base=lunchMenus;
+
+ // 2) Preference tags are scored. Keep only the best-matching tier,
+ // so unrelated menus don't leak into the random pool.
+ const scored=base.map(m=>{
+   const prefMatches=selectedPrefs.filter(t=>m.tags.includes(t));
+   const cuisineMatch=selectedCuisine.length ? 1 : 0;
+   return {menu:m,score:prefMatches.length + cuisineMatch,matched:prefMatches};
+ });
+
+ const maxScore=Math.max(...scored.map(x=>x.score));
+ let top=scored.filter(x=>x.score===maxScore);
+
+ // 3) If there are multiple preference tags and exact matches exist,
+ // prefer menus matching all selected preferences.
+ if(selectedPrefs.length){
+   const exact=top.filter(x=>selectedPrefs.every(t=>x.menu.tags.includes(t)));
+   if(exact.length) top=exact;
+ }
+
+ return {pool:top.map(x=>x.menu),score:maxScore,matched:selectedPrefs};
+}
+function showLunchResult(item, badgeText="", direct=false){
+ currentLunch=item;
+ const lines=[
+  "오늘은 이거다. 더 생각하지 마.",
+  "점심 고민 종료. 이걸로 가자.",
+  "메뉴 회의 끝. 오늘은 이거.",
+  "배고프면 고민도 길어진다. 바로 가.",
+  "오늘 점심 운명은 이쪽입니다."
+ ];
+ document.getElementById("lunchEmoji").textContent=item.emoji || "🍽️";
+ document.getElementById("lunchName").textContent=item.name;
  document.getElementById("lunchLine").textContent=lines[Math.floor(Math.random()*lines.length)];
+ const badge=document.getElementById("matchBadge");
+ if(badgeText){badge.textContent=badgeText;badge.style.display="inline-block"}else{badge.style.display="none"}
+ const retry=document.getElementById("lunchRetryBtn");
+ retry.onclick=direct?pickDirectLunch:pickLunch;
  document.getElementById("lunchResult").classList.add("show");
  setTimeout(()=>document.getElementById("lunchResult").scrollIntoView({behavior:"smooth",block:"center"}),50);
+}
+function pickLunch(){
+ const data=lunchCandidates();
+ const item=data.pool[Math.floor(Math.random()*data.pool.length)];
+ const selected=[...selectedLunchTags];
+ let badge="";
+ if(selected.length){
+   const matches=selected.filter(t=>item.tags.includes(t));
+   badge=matches.length?`✓ ${matches.join(" · ")} 조건 반영`:"선택 조건을 최대한 반영했어요";
+ }
+ showLunchResult(item,badge,false);
+}
+function pickDirectLunch(){
+ const values=[1,2,3,4,5]
+  .map(i=>(document.getElementById("direct"+i).value||"").trim())
+  .filter(Boolean);
+ if(values.length<2){
+   toast("후보를 2개 이상 입력해줘");
+   return;
+ }
+ const picked=values[Math.floor(Math.random()*values.length)];
+ showLunchResult({name:picked,emoji:"🎯",tags:[]},`${values.length}개 후보 중 랜덤 선택`,true);
 }
 async function shareLunch(){
  if(!currentLunch){pickLunch();return}
  const serviceUrl="https://hobbyboard.github.io/decision-lab/";
- const text=`오늘 점심은 ${currentLunch.emoji} ${currentLunch.name} 당첨 ㅋㅋ\n너도 골라봐 👇\n${serviceUrl}`;
+ const text=`오늘 점심은 ${currentLunch.emoji || "🍽️"} ${currentLunch.name} 당첨 ㅋㅋ\n너도 골라봐 👇\n${serviceUrl}`;
  try{
   if(navigator.share) await navigator.share({title:"오늘 뭐 먹지? | 결정장애 연구소",text});
   else{await navigator.clipboard.writeText(text);toast("점심 결과 복사 완료")}
