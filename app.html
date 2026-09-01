@@ -598,7 +598,7 @@ async function shareResult(){
   // Headline
   ctx.fillStyle="#77746d";
   ctx.font='700 27px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText("내 돈을 회사생활로 바꿔보면",540,210);
+  ctx.fillText("이거 하나 사려면 회사에서…",540,210);
 
   // Hero icon
   ctx.fillStyle="#ffffff";
@@ -658,25 +658,26 @@ async function shareResult(){
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
   const file=new File([blob],"decision-lab-result.png",{type:"image/png"});
 
-  const text=`${hero[0]} ${hero[1]} ${heroCount}짜리 소비래 ㅋㅋ\n너도 해봐 👇\n${serviceUrl}`;
+  const shortText=`${hero[0]} ${hero[1]} ${heroCount}짜리 소비래 ㅋㅋ\n너도 해봐 👇`;
+  const linkText=`${shortText}\n${serviceUrl}`;
 
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      // KakaoTalk/iOS can duplicate the URL when both text and url are supplied.
-      // Put the URL only in the text so the message arrives as one compact block.
+      // KakaoTalk creates a separate link-preview bubble for URLs included with an image.
+      // Share only the card + short caption here; the service address is already printed on the card.
       await navigator.share({
         title:"결정장애 연구소",
-        text,
+        text:shortText,
         files:[file]
       });
     }else if(navigator.share){
-      await navigator.share({title:"결정장애 연구소",text});
+      await navigator.share({title:"결정장애 연구소",text:linkText});
     }else{
       const a=document.createElement("a");
       a.href=URL.createObjectURL(blob);
       a.download="decision-lab-result.png";
       a.click();
-      if(navigator.clipboard) await navigator.clipboard.writeText(text);
+      if(navigator.clipboard) await navigator.clipboard.writeText(linkText);
       toast("공유 카드 저장 + 내용 복사 완료");
     }
   }catch(e){}
