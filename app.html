@@ -447,6 +447,24 @@ h1{
   background:rgba(255,255,255,.12);font-size:11px;font-weight:800
 }
 
+.flick-reward{display:none;margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:24px;background:#fff;text-align:center}
+.flick-reward.show{display:block}
+.flick-stage{position:relative;height:280px;margin-top:14px;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#f7f4eb 0%,#eee9dd 100%);border:1px solid #e6e1d6}
+.flick-person{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:150px;height:190px;transition:transform .18s ease;user-select:none}
+.flick-head{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:104px;height:104px;border-radius:50%;background:#ffd7b1;border:4px solid #171717}
+.flick-hair{position:absolute;left:50%;top:3px;transform:translateX(-50%);width:94px;height:44px;border-radius:50px 50px 24px 24px;background:#2f2925}
+.flick-eyes{position:absolute;left:50%;top:47px;transform:translateX(-50%);width:52px;display:flex;justify-content:space-between;font-size:18px;font-weight:900}
+.flick-mouth{position:absolute;left:50%;top:73px;transform:translateX(-50%);font-size:20px;font-weight:900}
+.flick-body{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:130px;height:92px;border-radius:28px 28px 14px 14px;background:#3b4758}
+.flick-name{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:112px;color:#fff;font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flick-finger{position:absolute;left:50%;top:34px;transform:translateX(-50%) translateY(-125px);font-size:72px;opacity:0;pointer-events:none}
+.flick-stage.hit .flick-person{transform:translate(-50%,-50%) rotate(4deg) scale(.96)}
+.flick-stage.hit .flick-finger{animation:flickDown .38s ease}
+@keyframes flickDown{0%{opacity:0;transform:translateX(-50%) translateY(-125px) rotate(-18deg)}30%{opacity:1}65%{opacity:1;transform:translateX(-50%) translateY(36px) rotate(2deg)}100%{opacity:0;transform:translateX(-50%) translateY(-6px) rotate(10deg)}}
+.flick-pop{position:absolute;right:22px;top:22px;padding:8px 12px;border-radius:999px;background:#171717;color:#fff;font-size:13px;font-weight:900;opacity:0;transform:scale(.8)}
+.flick-stage.hit .flick-pop{animation:popHit .5s ease}
+@keyframes popHit{0%{opacity:0;transform:scale(.8)}35%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1)}}
+
 </style>
 
 
@@ -553,7 +571,29 @@ h1{
     <div class="actions">
       <button class="button secondary" onclick="toast('좋습니다. 구매 허락 🛒')">🛒 그래도 산다</button>
       <button class="button secondary" onclick="delay24()">⏰ 24시간 미룬다</button>
+      <button class="button ghost full" onclick="showFlickReward()">😇 안 샀다. 나 잘 참았다</button>
       <button class="button primary full" onclick="goRandom()">🎲 운명에게 맡긴다</button>
+    </div>
+
+    <div class="flick-reward" id="flickReward">
+      <div class="kicker">참은 자의 보상</div>
+      <div class="quote" style="margin-top:8px">오늘 소비 참았으니<br><span id="flickRewardName">김팀장</span>에게 딱밤 한 대 😌</div>
+      <div class="flick-stage" id="flickStage">
+        <div class="flick-finger">👉</div>
+        <div class="flick-pop">딱! 💥</div>
+        <div class="flick-person">
+          <div class="flick-head">
+            <div class="flick-hair"></div>
+            <div class="flick-eyes"><span>•</span><span>•</span></div>
+            <div class="flick-mouth" id="flickMouth">ㅁ</div>
+          </div>
+          <div class="flick-body">
+            <div class="flick-name" id="flickCharacterName">김팀장</div>
+          </div>
+        </div>
+      </div>
+      <button class="button primary" style="margin-top:12px" onclick="flickHit()">👆 딱밤 때리기</button>
+      <div class="helper">※ 실제 인물이 아니라 입력한 직함/별명을 바탕으로 만든 가상 캐릭터예요.</div>
     </div>
 
     <div class="sharecard">
@@ -958,6 +998,26 @@ function renderVerdict(){
  else t="🔴 지금은 참는 쪽을 추천합니다. 통장이 이미 구조 요청 중이에요.";
  document.getElementById("verdictText").textContent=t;
 }
+
+function showFlickReward(){
+ const name=(state.coworker||"김팀장").trim()||"김팀장";
+ document.getElementById("flickRewardName").textContent=name;
+ document.getElementById("flickCharacterName").textContent=name;
+ document.getElementById("flickReward").classList.add("show");
+ document.getElementById("flickMouth").textContent="ㅁ";
+ setTimeout(()=>document.getElementById("flickReward").scrollIntoView({behavior:"smooth",block:"center"}),80);
+}
+function flickHit(){
+ const stage=document.getElementById("flickStage");
+ const mouth=document.getElementById("flickMouth");
+ stage.classList.remove("hit");
+ void stage.offsetWidth;
+ stage.classList.add("hit");
+ mouth.textContent="﹏";
+ if(navigator.vibrate) navigator.vibrate(35);
+ setTimeout(()=>{mouth.textContent="ㅁ";stage.classList.remove("hit")},520);
+}
+
 function delay24(){
  localStorage.setItem("decisionLabHold",JSON.stringify({price:state.price,salary:state.salary,createdAt:Date.now()}));
  toast("24시간 고민 목록에 넣었어요 ⏰");
