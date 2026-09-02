@@ -465,6 +465,86 @@ h1{
 .flick-stage.hit .flick-pop{animation:popHit .5s ease}
 @keyframes popHit{0%{opacity:0;transform:scale(.8)}35%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1)}}
 
+.gender-seg{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+.gender-seg button{
+  border:1px solid #dddcd7;
+  border-radius:13px;
+  padding:11px 8px;
+  background:#fff;
+  color:#555;
+  font-size:13px;
+  font-weight:900;
+}
+.gender-seg button.active{
+  background:#171717;
+  color:#fff;
+  border-color:#171717;
+}
+.flick-bump{
+  position:absolute;
+  left:66%;
+  top:7px;
+  width:34px;
+  height:34px;
+  border-radius:50% 50% 44% 44%;
+  background:#ff7b7b;
+  border:3px solid #171717;
+  opacity:0;
+  transform:scale(.2) rotate(10deg);
+  z-index:3;
+}
+.flick-bump::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-9px;
+  width:3px;
+  height:8px;
+  background:#171717;
+  transform:translateX(-50%);
+  border-radius:3px;
+}
+.flick-stage.bump .flick-bump{
+  opacity:1;
+  animation:bumpGrow .28s ease-out forwards;
+}
+@keyframes bumpGrow{
+  0%{opacity:0;transform:scale(.2) rotate(10deg)}
+  70%{opacity:1;transform:scale(1.15) rotate(10deg)}
+  100%{opacity:1;transform:scale(1) rotate(10deg)}
+}
+.flick-stage.hit .flick-person{
+  animation:headJolt .28s ease;
+}
+@keyframes headJolt{
+  0%{transform:translate(-50%,-50%) rotate(0)}
+  35%{transform:translate(-50%,-52%) rotate(5deg)}
+  70%{transform:translate(-50%,-49%) rotate(-2deg)}
+  100%{transform:translate(-50%,-50%) rotate(0)}
+}
+.flick-finger{
+  left:29%;
+  top:6px;
+  font-size:66px;
+  transform:translate(-50%,-70px) rotate(-28deg);
+  transform-origin:70% 70%;
+}
+.flick-stage.hit .flick-finger{
+  animation:flickSnap .34s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes flickSnap{
+  0%{opacity:0;transform:translate(-50%,-70px) rotate(-28deg)}
+  20%{opacity:1}
+  58%{opacity:1;transform:translate(25px,48px) rotate(18deg)}
+  72%{opacity:1;transform:translate(40px,38px) rotate(8deg)}
+  100%{opacity:0;transform:translate(15px,10px) rotate(-8deg)}
+}
+
 </style>
 
 
@@ -513,6 +593,10 @@ h1{
           <input id="coworker" type="text" maxlength="12" placeholder="예: 박부장, 최팀장, 이과장" style="text-align:left;font-size:20px">
         </div>
         <div class="helper">비워두면 ‘김팀장’으로 나와요.</div>
+        <div class="gender-seg">
+          <button type="button" class="active" id="genderMale" onclick="setCoworkerGender('male')">👨 남자</button>
+          <button type="button" id="genderFemale" onclick="setCoworkerGender('female')">👩 여자</button>
+        </div>
       </div>
       <div class="card">
         <div class="label">상품 가격</div>
@@ -582,8 +666,9 @@ h1{
         <div class="flick-finger">👉</div>
         <div class="flick-pop">딱! 💥</div>
         <div class="flick-person">
-          <div class="flick-head">
-            <div class="flick-hair"></div>
+          <div class="flick-head" id="flickHead">
+            <div class="flick-hair" id="flickHair"></div>
+            <div class="flick-bump" id="flickBump"></div>
             <div class="flick-eyes"><span>•</span><span>•</span></div>
             <div class="flick-mouth" id="flickMouth">ㅁ</div>
           </div>
@@ -934,7 +1019,7 @@ async function shareLunch(){
  }catch(e){}
 }
 
-let state={item:"이거",coworker:"김팀장",price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
+let state={item:"이거",coworker:"김팀장",coworkerGender:"male",price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
 const units=[
  ["🧑‍💼","{coworker} 잔소리",15],
  ["🪑","의미 없는 회의",60],
@@ -951,6 +1036,12 @@ function fmt(n){return Math.round(n).toLocaleString("ko-KR")}
 function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0)}
 function goSalary(){show("step2")}
 function toggleSeg(el){el.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));el.classList.add("active")}
+
+function setCoworkerGender(gender){
+ state.coworkerGender=gender;
+ document.getElementById("genderMale").classList.toggle("active",gender==="male");
+ document.getElementById("genderFemale").classList.toggle("active",gender==="female");
+}
 function calculate(){
  state.item=(document.getElementById("item").value||"").trim()||"이거";
  state.coworker=(document.getElementById("coworker").value||"").trim()||"김팀장";
@@ -1003,6 +1094,26 @@ function showFlickReward(){
  const name=(state.coworker||"김팀장").trim()||"김팀장";
  document.getElementById("flickRewardName").textContent=name;
  document.getElementById("flickCharacterName").textContent=name;
+
+ const hair=document.getElementById("flickHair");
+ const head=document.getElementById("flickHead");
+ const body=document.querySelector(".flick-body");
+ if(state.coworkerGender==="female"){
+   hair.style.height="58px";
+   hair.style.width="100px";
+   hair.style.borderRadius="50px 50px 34px 34px";
+   head.style.background="#ffd3b0";
+   body.style.background="#6f4b6e";
+ }else{
+   hair.style.height="44px";
+   hair.style.width="94px";
+   hair.style.borderRadius="50px 50px 24px 24px";
+   head.style.background="#ffd7b1";
+   body.style.background="#3b4758";
+ }
+
+ const stage=document.getElementById("flickStage");
+ stage.classList.remove("hit","bump");
  document.getElementById("flickReward").classList.add("show");
  document.getElementById("flickMouth").textContent="ㅁ";
  setTimeout(()=>document.getElementById("flickReward").scrollIntoView({behavior:"smooth",block:"center"}),80);
@@ -1010,12 +1121,22 @@ function showFlickReward(){
 function flickHit(){
  const stage=document.getElementById("flickStage");
  const mouth=document.getElementById("flickMouth");
- stage.classList.remove("hit");
+
+ stage.classList.remove("hit","bump");
  void stage.offsetWidth;
  stage.classList.add("hit");
- mouth.textContent="﹏";
- if(navigator.vibrate) navigator.vibrate(35);
- setTimeout(()=>{mouth.textContent="ㅁ";stage.classList.remove("hit")},520);
+ mouth.textContent="×﹏×";
+
+ if(navigator.vibrate) navigator.vibrate([25,35,45]);
+
+ setTimeout(()=>{
+   stage.classList.add("bump");
+   mouth.textContent="ㅠ﹏ㅠ";
+ },190);
+
+ setTimeout(()=>{
+   stage.classList.remove("hit");
+ },420);
 }
 
 function delay24(){
