@@ -506,6 +506,13 @@ h1{
         <div class="label">월급</div>
         <div class="moneybox"><b>₩</b><input id="salary" inputmode="numeric" pattern="[0-9]*" value="5000000"></div>
       </div>
+      <div class="card">
+        <div class="label">회사에서 제일 싫은 사람은? 😇</div>
+        <div class="moneybox" style="grid-template-columns:minmax(0,1fr)">
+          <input id="coworker" type="text" maxlength="12" placeholder="예: 박부장, 최팀장, 이과장" style="text-align:left;font-size:20px">
+        </div>
+        <div class="helper">비워두면 ‘김팀장’으로 나와요.</div>
+      </div>
       <div>
         <div class="label">급여 기준</div>
         <div class="segment">
@@ -887,9 +894,9 @@ async function shareLunch(){
  }catch(e){}
 }
 
-let state={item:"이거",price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
+let state={item:"이거",coworker:"김팀장",price:89000,salary:5000000,totalMinutes:223,chosenUnits:[],heroUnit:null};
 const units=[
- ["🧑‍💼","김팀장 잔소리",15],
+ ["🧑‍💼","{coworker} 잔소리",15],
  ["🪑","의미 없는 회의",60],
  ["💻","퇴근 직전 업무지시",30],
  ["📊","PPT 한 장 만들기",30],
@@ -897,7 +904,7 @@ const units=[
  ["☕","회사에서 멍때리기",10],
  ["🚇","출퇴근",120],
  ["📅","월요일 출근",480],
- ["😬","상사 농담에 웃기",3],
+ ["😬","{coworker} 농담에 웃기",3],
  ["🗣️","“간단한 수정 하나만”",20]
 ];
 function fmt(n){return Math.round(n).toLocaleString("ko-KR")}
@@ -906,6 +913,7 @@ function goSalary(){show("step2")}
 function toggleSeg(el){el.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));el.classList.add("active")}
 function calculate(){
  state.item=(document.getElementById("item").value||"").trim()||"이거";
+ state.coworker=(document.getElementById("coworker").value||"").trim()||"김팀장";
  state.price=Number(document.getElementById("price").value.replace(/\D/g,''))||0;
  state.salary=Number(document.getElementById("salary").value.replace(/\D/g,''))||1;
  const hours=state.price/(state.salary/209);
@@ -920,6 +928,7 @@ function calculate(){
  show("result");
 }
 function sample(arr,n){return [...arr].sort(()=>Math.random()-.5).slice(0,n)}
+function unitLabel(u){return u[1].replaceAll("{coworker}",state.coworker)}
 function unitCount(u){
  const count=state.totalMinutes/u[2];
  return count>=10?Math.round(count)+"회":count.toFixed(1)+"회";
@@ -931,21 +940,21 @@ function renderUnits(){
 
  const html=chosen.map(u=>{
    const shown=unitCount(u);
-   return `<div class="unit"><div class="left">${u[0]} ${u[1]}</div><div class="right">${shown}</div></div>`
+   return `<div class="unit"><div class="left">${u[0]} ${unitLabel(u)}</div><div class="right">${shown}</div></div>`
  }).join("");
  document.getElementById("unitList").innerHTML=html;
 
  const hero=state.heroUnit;
  const heroCount=unitCount(hero);
- document.getElementById("memeHeadline").textContent=`${state.item} = ${hero[0]} ${hero[1]} ${heroCount}짜리 소비입니다.`;
- document.getElementById("shareQuote").innerHTML=`${state.item} 하나 사려면<br>${hero[1]} ${heroCount}를 버텨야 한다.`;
+ document.getElementById("memeHeadline").textContent=`${state.item} = ${hero[0]} ${unitLabel(hero)} ${heroCount}짜리 소비입니다.`;
+ document.getElementById("shareQuote").innerHTML=`${state.item} 하나 사려면<br>${unitLabel(hero)} ${heroCount}를 버텨야 한다.`;
 }
 function renderVerdict(){
  const ratio=state.price/state.salary*100;
  let t="";
  if(ratio<1) t="🟢 이 정도면 괜찮아요. 작은 소비에 가까워요.";
  else if(ratio<3) t="🟡 하루 정도 고민해보세요. 충동인지 필요인지 딱 한 번만 더 확인.";
- else if(ratio<5) t="🟠 꽤 큰 소비입니다. 김팀장을 더 오래 견딜 만큼 원하는지 생각해보세요.";
+ else if(ratio<5) t=`🟠 꽤 큰 소비입니다. ${state.coworker}을(를) 더 오래 견딜 만큼 원하는지 생각해보세요.`;
  else t="🔴 지금은 참는 쪽을 추천합니다. 통장이 이미 구조 요청 중이에요.";
  document.getElementById("verdictText").textContent=t;
 }
@@ -1006,7 +1015,7 @@ async function shareResult(){
   // Hero text
   ctx.fillStyle="#171717";
   ctx.font='900 52px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  fitText(ctx,hero[1],540,495,880,52,36);
+  fitText(ctx,unitLabel(hero),540,495,880,52,36);
   ctx.font='950 112px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
   ctx.fillText(heroCount,540,620);
 
@@ -1033,7 +1042,7 @@ async function shareResult(){
     ctx.textAlign="left";
     ctx.fillStyle="#242424";
     ctx.font='800 28px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-    fitTextLeft(ctx,u[1],185,y+58,550,28,22);
+    fitTextLeft(ctx,unitLabel(u),185,y+58,550,28,22);
 
     ctx.textAlign="right";
     ctx.font='900 31px -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
@@ -1055,7 +1064,7 @@ async function shareResult(){
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
   const file=new File([blob],"decision-lab-result.png",{type:"image/png"});
 
-  const shortText=`${state.item} 사려면 ${hero[0]} ${hero[1]} ${heroCount}짜리래 ㅋㅋ\n너도 해봐 👇`;
+  const shortText=`${state.item} 사려면 ${hero[0]} ${unitLabel(hero)} ${heroCount}짜리래 ㅋㅋ\n너도 해봐 👇`;
   const linkText=`${shortText}\n${serviceUrl}`;
 
   try{
