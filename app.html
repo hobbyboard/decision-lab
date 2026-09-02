@@ -545,6 +545,92 @@ h1{
   100%{opacity:0;transform:translate(15px,10px) rotate(-8deg)}
 }
 
+.flick-bangs,.flick-sidehair-l,.flick-sidehair-r,.flick-ponytail,.flick-cheek-l,.flick-cheek-r{
+  position:absolute;display:none;
+}
+.flick-head.female{
+  background:#ffd8bd !important;
+  width:100px;
+  height:108px;
+  border-radius:48% 48% 45% 45%;
+}
+.flick-head.female .flick-hair{
+  display:none;
+}
+.flick-head.female .flick-bangs{
+  display:block;
+  left:50%;top:-3px;transform:translateX(-50%);
+  width:92px;height:44px;
+  background:#3a2b27;
+  border-radius:46px 46px 24px 24px;
+  z-index:2;
+}
+.flick-head.female .flick-bangs::after{
+  content:"";
+  position:absolute;
+  left:42px;top:12px;
+  width:12px;height:35px;
+  background:#ffd8bd;
+  border-radius:0 0 12px 12px;
+  transform:rotate(7deg);
+}
+.flick-head.female .flick-sidehair-l,
+.flick-head.female .flick-sidehair-r{
+  display:block;
+  top:20px;
+  width:28px;height:96px;
+  background:#3a2b27;
+  border-radius:22px;
+  z-index:-1;
+}
+.flick-head.female .flick-sidehair-l{left:-13px;transform:rotate(5deg)}
+.flick-head.female .flick-sidehair-r{right:-13px;transform:rotate(-5deg)}
+.flick-head.female .flick-ponytail{
+  display:block;
+  right:-32px;top:26px;
+  width:36px;height:76px;
+  background:#3a2b27;
+  border-radius:50%;
+  transform:rotate(-18deg);
+  z-index:-2;
+}
+.flick-head.female .flick-cheek-l,
+.flick-head.female .flick-cheek-r{
+  display:block;
+  top:68px;
+  width:10px;height:6px;
+  border-radius:50%;
+  background:#f59c9c;
+  opacity:.65;
+}
+.flick-head.female .flick-cheek-l{left:18px}
+.flick-head.female .flick-cheek-r{right:18px}
+.flick-head.female .flick-eyes{
+  top:48px;
+  width:48px;
+  font-size:17px;
+}
+.flick-head.female .flick-mouth{
+  top:76px;
+  font-size:18px;
+}
+.flick-body.female{
+  width:118px;
+  height:96px;
+  border-radius:34px 34px 14px 14px;
+  background:#8b5f86 !important;
+}
+.flick-body.female::before{
+  content:"";
+  position:absolute;
+  left:50%;top:0;
+  transform:translateX(-50%);
+  width:34px;height:17px;
+  border-radius:0 0 16px 16px;
+  background:#fff;
+  opacity:.9;
+}
+
 </style>
 
 
@@ -668,11 +754,17 @@ h1{
         <div class="flick-person">
           <div class="flick-head" id="flickHead">
             <div class="flick-hair" id="flickHair"></div>
+            <div class="flick-bangs"></div>
+            <div class="flick-sidehair-l"></div>
+            <div class="flick-sidehair-r"></div>
+            <div class="flick-ponytail"></div>
+            <div class="flick-cheek-l"></div>
+            <div class="flick-cheek-r"></div>
             <div class="flick-bump" id="flickBump"></div>
             <div class="flick-eyes"><span>•</span><span>•</span></div>
             <div class="flick-mouth" id="flickMouth">ㅁ</div>
           </div>
-          <div class="flick-body">
+          <div class="flick-body" id="flickBody">
             <div class="flick-name" id="flickCharacterName">김팀장</div>
           </div>
         </div>
@@ -1095,22 +1187,11 @@ function showFlickReward(){
  document.getElementById("flickRewardName").textContent=name;
  document.getElementById("flickCharacterName").textContent=name;
 
- const hair=document.getElementById("flickHair");
  const head=document.getElementById("flickHead");
- const body=document.querySelector(".flick-body");
- if(state.coworkerGender==="female"){
-   hair.style.height="58px";
-   hair.style.width="100px";
-   hair.style.borderRadius="50px 50px 34px 34px";
-   head.style.background="#ffd3b0";
-   body.style.background="#6f4b6e";
- }else{
-   hair.style.height="44px";
-   hair.style.width="94px";
-   hair.style.borderRadius="50px 50px 24px 24px";
-   head.style.background="#ffd7b1";
-   body.style.background="#3b4758";
- }
+ const body=document.getElementById("flickBody") || document.querySelector(".flick-body");
+ const isFemale=state.coworkerGender==="female";
+ head.classList.toggle("female",isFemale);
+ body.classList.toggle("female",isFemale);
 
  const stage=document.getElementById("flickStage");
  stage.classList.remove("hit","bump");
